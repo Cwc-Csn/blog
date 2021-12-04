@@ -1,0 +1,150 @@
+{%  extends 'base.html'  %}
+
+
+{% block title %}新首页{% endblock %}
+
+{% block css%}
+    <style>
+        .box{
+            border-radius: 10px;
+            border: 1px solid gray;
+            margin-bottom: 10px;
+            padding: 10px 30px;
+        }
+        .thum{
+            font-size: 20px;
+        }
+        .user{
+            float: left;
+        }
+        .like{
+            float: right;
+            cursor: pointer;
+
+        }
+        .clear{
+            clear: both;
+        }
+    </style>
+{% endblock %}
+
+{%block body %}
+<div class="container">
+
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+    {% if paginate %}
+
+        {% for blog in paginate.items %}
+
+            <div class="box">
+                <h2 class="title">
+                    <a href="#">{{blog.title}}</a>
+                </h2>
+                <p class="thum">{{blog.thum_content}}</p>
+                <div class="user_like">
+                    <a href="{{url_for('blog.userindex')}}?name={{blog.user.username}}">
+                        <div class="user">
+                         <span>用户名：{{blog.user.username}}</span>
+                        </div>
+                    </a>
+
+                    <div class="like"  >
+                        {%if session.get('username')==blog.user.username%}
+                            <a class="delete" bid="{{blog.bid}}">删除</a>
+                        {%endif%}
+                        {%if session.get('username')%}
+<!--                            <a href="{{url_for('blog.likeorunlike')}}?bid={{blog.bid}}">-->
+                            <a class="likea" bid="{{blog.bid}}" style="color: gray">
+                        {%else%}
+                            <a href="{{url_for('user.login')}}"    ></a>
+                        {%endif%}
+
+                           {%if blog.bid in like_bids %}
+                            <span class="glyphicon glyphicon-thumbs-up likehand" style="color: red"></span>
+                           {%else%}
+                            <span class="glyphicon glyphicon-thumbs-up likehand" ></span>
+                           {%endif%}
+                        {#点赞的数量，点赞的用户个数 |length #}
+                            <span class="likenum">{{blog.like_users|length}}</span>
+                       </a>
+                    </div>
+
+                </div>
+                <div class="clear"></div>
+
+            </div>
+
+        {% endfor %}
+    <ul class="pagination">
+        {%if paginate.has_prev %}
+            <li><a href="{{url_for('blog.blognewindex')}}?curpage={{paginate.prev_num}}">&laquo;</a></li>
+        {%else%}
+<!--            <li class="disabled"><a href="#">&laquo;</a></li>-->
+        {%endif%}
+        {%for pagenum in paginate.iter_pages()%}
+            <li {%if pagenum==paginate.page%}class="active"{%endif%}><a href="{{url_for('blog.blognewindex')}}?curpage={{pagenum}}">{{pagenum}}</a> </li>
+        {%endfor%}
+        {%if paginate.has_next %}
+            <li><a href="{{url_for('blog.blognewindex')}}?curpage={{paginate.next_num}}">&raquo;</a></li>
+        {%else%}
+<!--            <li class="disabled"><a href="#">&laquo;</a></li>-->
+        {%endif%}
+
+    </ul>
+    {% else %}
+       <h3>还没有人发表博客</h3>
+    {% endif %}
+</div>
+{%endblock%}
+
+{% block js %}
+    <script>
+        $('.likea').click(function () {
+            // #局部刷新点赞
+            var _this=$(this)
+            $.ajax({
+                url:"{{url_for('blog.likeorunlike')}}",
+                type:'get',
+                data:'bid='+_this.attr('bid'),
+                success: function (result,status) {
+                    if(status=='success'){
+                        _this.find('.likenum').text(result.likenum)
+                        if(result.code==200){
+                            _this.find('.likehand').css('color','red')
+
+                        }else {
+                             _this.find('.likehand').css('color','gray')
+                        }
+                    }
+
+                }
+            })
+        })
+        $('.delete').click(function () {
+              var _this=$(this)
+            $.ajax({
+                url:"{{url_for('blog.deleteblog')}}",
+                type:'post',
+                data:"bid="+_this.attr('bid')+'&csrf_token='+"{{csrf_token()}}",
+                success:function (result,status) {
+                    console.log(result)
+                    if(status=='success'){
+                        _this.parent().parent().parent().remove()
+                    }
+                }
+            })
+        })
+    </script>
+<!--    <script>-->
+<!--        $('.like').click(function () {-->
+<!--            $.ajax({-->
+<!--                url:"{{url_for('blog.like')}}",-->
+<!--                type:'post',-->
+<!--                data:'bid='+$('.like').attr('bid')+"&csrf_token="+$('.csrf_token').val(),-->
+<!--                success: function (result,statue) {-->
+<!--                    console.log(result);-->
+<!--                }-->
+<!--            })-->
+<!--        })-->
+<!--    </script>-->
+{% endblock %}

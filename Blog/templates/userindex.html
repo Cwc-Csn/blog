@@ -1,0 +1,113 @@
+{%  extends 'base.html'  %}
+
+
+{% block title %}用户{% endblock %}
+
+{% block css%}
+    <style>
+        .box{
+            border-radius: 10px;
+            border: 1px solid gray;
+            margin-bottom: 10px;
+            padding: 10px 30px;
+        }
+        .thum{
+            font-size: 20px;
+        }
+        .user{
+            float: left;
+        }
+        .like{
+            float: right;
+            cursor: pointer;
+
+        }
+        .clear{
+            clear: both;
+        }
+    </style>
+{% endblock %}
+
+{%block body %}
+<div class="container">
+
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+
+
+        {% for blog in blogs %}
+
+            <div class="box">
+                <h2 class="title">
+                    <a href="#">{{blog.title}}</a>
+                </h2>
+                <p class="thum">{{blog.thum_content}}</p>
+                <div class="user_like">
+                    <div class="user">
+                         <span>用户名：{{blog.user.username}}</span>
+                    </div>
+
+                    <div class="like"  >
+                        {%if session.get('username')%}
+<!--                            <a href="{{url_for('blog.likeorunlike')}}?bid={{blog.bid}}">-->
+                            <a class="likea" bid="{{blog.bid}}" style="color: gray">
+                        {%else%}
+                            <a href="{{url_for('user.login')}}"    ></a>
+                        {%endif%}
+                           {%if blog.bid in like_bids %}
+                            <span class="glyphicon glyphicon-thumbs-up likehand" style="color: red"></span>
+                           {%else%}
+                            <span class="glyphicon glyphicon-thumbs-up likehand" ></span>
+                           {%endif%}
+                        {#点赞的数量，点赞的用户个数 |length #}
+                            <span class="likenum">{{blog.like_users|length}}</span>
+                       </a>
+                    </div>
+
+                </div>
+                <div class="clear"></div>
+
+            </div>
+
+        {% endfor %}
+
+
+</div>
+{%endblock%}
+
+{% block js %}
+    <script>
+        $('.likea').click(function () {
+            // #局部刷新点赞
+            var _this=$(this)
+            $.ajax({
+                url:"{{url_for('blog.likeorunlike')}}",
+                type:'get',
+                data:'bid='+_this.attr('bid'),
+                success: function (result,status) {
+                    if(status=='success'){
+                        _this.find('.likenum').text(result.likenum)
+                        if(result.code==200){
+                            _this.find('.likehand').css('color','red')
+
+                        }else {
+                             _this.find('.likehand').css('color','gray')
+                        }
+                    }
+
+                }
+            })
+        })
+    </script>
+<!--    <script>-->
+<!--        $('.like').click(function () {-->
+<!--            $.ajax({-->
+<!--                url:"{{url_for('blog.like')}}",-->
+<!--                type:'post',-->
+<!--                data:'bid='+$('.like').attr('bid')+"&csrf_token="+$('.csrf_token').val(),-->
+<!--                success: function (result,statue) {-->
+<!--                    console.log(result);-->
+<!--                }-->
+<!--            })-->
+<!--        })-->
+<!--    </script>-->
+{% endblock %}

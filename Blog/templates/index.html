@@ -1,0 +1,102 @@
+{%  extends 'base.html'  %}
+
+
+{% block title %}首页{% endblock %}
+
+{% block css%}
+    <style>
+        .box{
+            border-radius: 10px;
+            border: 1px solid gray;
+            margin-bottom: 10px;
+            padding: 10px 30px;
+        }
+        .thum{
+            font-size: 20px;
+        }
+        .user{
+            float: left;
+        }
+        .like{
+            float: right;
+            cursor: pointer;
+
+        }
+        .clear{
+            clear: both;
+        }
+    </style>
+{% endblock %}
+
+{%block body %}
+<div class="container">
+
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+    {% if blogs %}
+
+        {% for blog in blogs %}
+            {% set islike={'flag':False} %}
+            {%for user in blog.like_users%}
+                {%if session.get('username')==user.username %}
+                    {%if islike.update({'flag':True})%} {%endif%}
+                {%endif%}
+            {%endfor%}
+            <div class="box">
+                <h2 class="title">
+                    <a href="#">{{blog.title}}</a>
+                </h2>
+                <p class="thum">{{blog.thum_content}}</p>
+                <div class="user_like">
+                    <div class="user">
+<!--                         url_for('static', filename='icon/LenovoWallPaper.jpg')-->
+                        <a href="{{url_for('blog.userindex')}}?name={{blog.user.username}}">
+                            {%if blog.user.user_icon %}
+                             <img src="{{url_for('static', filename=blog.user.user_icon)}}" width="30px">
+                            {%else%}
+                             <img src="{{url_for('static', filename='icon/LenovoWallPaper.jpg')}}" width="30px">
+                            {%endif%}
+                             <span>作者：{{blog.user.username}}</span>
+                        </a>
+                    </div>
+                    {%if islike.flag %}
+                        <div class="like" bid="{{blog.bid}}">
+                           <a href="{{url_for('blog.unlike')}}?bid={{blog.bid}}">
+                                <span class="glyphicon glyphicon-thumbs-up" style="color: red"></span>
+                            {#点赞的数量，点赞的用户个数 |length #}
+                                <span >{{blog.like_users|length}}</span>
+                           </a>
+                        </div>
+                    {%else%}
+                        <div class="like" bid="{{blog.bid}}">
+                           <a href="{{url_for('blog.like')}}?bid={{blog.bid}}">
+                                <span class="glyphicon glyphicon-thumbs-up"></span>
+                            {#点赞的数量，点赞的用户个数 |length #}
+                                <span >{{blog.like_users|length}}</span>
+                           </a>
+                        </div>
+                    {%endif%}
+                </div>
+                <div class="clear"></div>
+            </div>
+        {% endfor %}
+
+    {% else %}
+       <h3>还没有人发表博客</h3>
+    {% endif %}
+</div>
+{%endblock%}
+
+{% block js %}
+<!--    <script>-->
+<!--        $('.like').click(function () {-->
+<!--            $.ajax({-->
+<!--                url:"{{url_for('blog.like')}}",-->
+<!--                type:'post',-->
+<!--                data:'bid='+$('.like').attr('bid')+"&csrf_token="+$('.csrf_token').val(),-->
+<!--                success: function (result,statue) {-->
+<!--                    console.log(result);-->
+<!--                }-->
+<!--            })-->
+<!--        })-->
+<!--    </script>-->
+{% endblock %}

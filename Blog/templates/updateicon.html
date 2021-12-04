@@ -1,0 +1,30 @@
+{%  extends 'base.html'  %}
+
+
+{% block title %}修改头像{% endblock %}
+
+{%block body%}
+    <div class="container">
+        <form action="{{url_for('user.updateicon')}}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+            <div class="form-group">
+                <label for="exampleInputFile">选择图片</label>
+                <input type="file" id="exampleInputFile" name="icon">
+                <img src="{{url_for('static', filename='icon/LenovoWallPaper.jpg')}}" width="150px" class="icoonimage">
+            </div>
+            <button type="submit" class="btn btn-default">上传头像</button>
+        </form>
+    </div>
+{%endblock%}
+
+{%block js %}
+    <script>
+        var inputfile=document.getElementById(('exampleInputFile'));
+        inputfile.onchange=function () {
+            var files=inputfile.files;
+            var imgurl=window.URL.createObjectURL(files[0]);
+            $('.icoonimage').attr('src',imgurl)
+
+        }
+    </script>
+{%endblock%}
